@@ -19,6 +19,7 @@ const allowedOrigins = [
   "http://localhost:5000",
   "http://localhost:5173",
   "http://localhost:4173",
+  "https://raslan-travel.vercel.app",
 ];
 
 app.use(express.json());
