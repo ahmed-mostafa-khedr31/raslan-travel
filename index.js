@@ -79,7 +79,8 @@ app.get(["/swagger", "/swagger/"], (req, res) => {
 <head>
   <meta charset="UTF-8" />
   <title>Raslan Travel API</title>
-  <meta name="favicon" href="https://raslan-travel.vercel.app/uploads/man.png"> 
+ <link rel="icon" type="image/x-icon" href="https://raslan-travel.vercel.app/uploads/man.png"> 
+
   <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5.33.1/swagger-ui.css" />
 </head>
 <body>
