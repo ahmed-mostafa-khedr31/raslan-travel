@@ -63,7 +63,14 @@ connectDB().catch((err) => {
   console.log(err);
 });
 // http://localhost:5000/swagger
-app.use("/swagger", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+const swaggerHtml = swaggerUi
+  .generateHTML(swaggerSpec)
+  .replaceAll('href="./', 'href="/swagger/')
+  .replaceAll('src="./', 'src="/swagger/');
+app.use("/swagger", swaggerUi.serve);
+app.get("/swagger", (req, res) => {
+  res.send(swaggerHtml);
+});
 
 app.use("/api", async (req, res, next) => {
   try {
