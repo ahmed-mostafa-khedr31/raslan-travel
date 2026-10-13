@@ -1,5 +1,4 @@
 const express = require("express");
-const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("./config/swagger");
 var jwt = require("jsonwebtoken");
 
@@ -63,40 +62,44 @@ connectDB().catch((err) => {
   console.log(err);
 });
 // http://localhost:5000/swagger
-const swaggerDist = require("swagger-ui-dist/absolute-path")();
-const swaggerHtml = swaggerUi
-  .generateHTML(swaggerSpec)
-  .replaceAll('href="./', 'href="/swagger/')
-  .replaceAll('src="./', 'src="/swagger/');
-const swaggerInit = `window.onload = function () {
-  window.ui = SwaggerUIBundle({
-    spec: ${JSON.stringify(swaggerSpec)},
-    dom_id: "#swagger-ui",
-    deepLinking: true,
-    presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
-    layout: "StandaloneLayout",
-    persistAuthorization: true
-  });
-};`;
-const swaggerFiles = [
-  "swagger-ui-bundle.js",
-  "swagger-ui-standalone-preset.js",
-  "swagger-ui.css",
-  "favicon-32x32.png",
-  "favicon-16x16.png",
-];
-
-app.use("/swagger", express.static(swaggerDist, { index: false }));
-swaggerFiles.forEach((fileName) => {
-  app.get("/" + fileName, (req, res) => {
-    res.sendFile(path.join(swaggerDist, fileName));
-  });
-});
-app.get(["/swagger/swagger-ui-init.js", "/swagger-ui-init.js"], (req, res) => {
-  res.type("application/javascript");
-  res.send(swaggerInit);
-});
+// https://raslan-travel.vercel.app/swagger/
 app.get(["/swagger", "/swagger/"], (req, res) => {
+  const protocol = req.headers["x-forwarded-proto"] || req.protocol;
+  const spec = {
+    ...swaggerSpec,
+    servers: [
+      {
+        url: `${protocol}://${req.get("host")}/api`,
+        description: "Current server",
+      },
+    ],
+  };
+  const swaggerHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Raslan-travel API</title>
+  <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5.33.1/swagger-ui.css" />
+</head>
+<body>
+  <div id="swagger-ui"></div>
+  <script src="https://unpkg.com/swagger-ui-dist@5.33.1/swagger-ui-bundle.js"></script>
+  <script src="https://unpkg.com/swagger-ui-dist@5.33.1/swagger-ui-standalone-preset.js"></script>
+  <script>
+    window.onload = function () {
+      window.ui = SwaggerUIBundle({
+        spec: ${JSON.stringify(spec).replace(/</g, "\\u003c")},
+        dom_id: "#swagger-ui",
+        deepLinking: true,
+        presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
+        layout: "StandaloneLayout",
+        persistAuthorization: true
+      });
+    };
+  </script>
+</body>
+</html>`;
+  res.type("html");
   res.send(swaggerHtml);
 });
 
