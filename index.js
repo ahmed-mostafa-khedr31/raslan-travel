@@ -63,12 +63,40 @@ connectDB().catch((err) => {
   console.log(err);
 });
 // http://localhost:5000/swagger
+const swaggerDist = require("swagger-ui-dist/absolute-path")();
 const swaggerHtml = swaggerUi
   .generateHTML(swaggerSpec)
   .replaceAll('href="./', 'href="/swagger/')
   .replaceAll('src="./', 'src="/swagger/');
-app.use("/swagger", swaggerUi.serve);
-app.get("/swagger", (req, res) => {
+const swaggerInit = `window.onload = function () {
+  window.ui = SwaggerUIBundle({
+    spec: ${JSON.stringify(swaggerSpec)},
+    dom_id: "#swagger-ui",
+    deepLinking: true,
+    presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
+    layout: "StandaloneLayout",
+    persistAuthorization: true
+  });
+};`;
+const swaggerFiles = [
+  "swagger-ui-bundle.js",
+  "swagger-ui-standalone-preset.js",
+  "swagger-ui.css",
+  "favicon-32x32.png",
+  "favicon-16x16.png",
+];
+
+app.use("/swagger", express.static(swaggerDist, { index: false }));
+swaggerFiles.forEach((fileName) => {
+  app.get("/" + fileName, (req, res) => {
+    res.sendFile(path.join(swaggerDist, fileName));
+  });
+});
+app.get(["/swagger/swagger-ui-init.js", "/swagger-ui-init.js"], (req, res) => {
+  res.type("application/javascript");
+  res.send(swaggerInit);
+});
+app.get(["/swagger", "/swagger/"], (req, res) => {
   res.send(swaggerHtml);
 });
 
