@@ -14,6 +14,10 @@ const swaggerOptions = {
         url: "http://localhost:5000/api",
         description: "Development server",
       },
+      {
+        url: "https://raslan-travel.vercel.app/api",
+        description: "Production server",
+      },
     ],
     components: {
       securitySchemes: {
